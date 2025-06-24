@@ -1,9 +1,9 @@
 name: Deploy
 on:
   push:
-    branches: main
+    branches: [main]
   pull_request:
-    branches: main
+    branches: [main]
 
 jobs:
   deploy:
@@ -16,29 +16,23 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
+      - name: Setup Deno environment
+        uses: denoland/setup-deno@v1
         with:
-          deno-version: v2.x
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Install step
-        run: "npm install"
+          deno-version: v1.x
 
       - name: Build step
-        run: "npm run build"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          BROWSERLESS_API_KEY: ${{ secrets.BROWSERLESS_API_KEY }}
+        run: deno task build
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "kimi11235-scraping-22"
-          entrypoint: "jsr:@deno/nextjs-start/v15"
-          root: "."
-          include: .next, public
+          project: "scraping"
+          entrypoint: "main.ts"
           
